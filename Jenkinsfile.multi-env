@@ -1,0 +1,125 @@
+pipeline {
+agent any
+
+environment {
+// Set environment variables for different stages of deployment
+DEV_ENV = "development"
+STAGING_ENV = "staging"
+PROD_ENV = "production"
+DOCKER_IMAGE = "myapp:latest"
+}
+options {
+timeout(time: 1, unit : 'HOURS') // Pipeline global timeout
+retry(3) // Pipeline retry steps on failure
+timestamps() // Enabled for logs
+}
+
+stages {
+stage('Initialize') {
+steps {
+script {
+echo "Initializing pipeline for app deployment..."
+}
+}
+}
+
+stage('Build') {
+steps {
+script {
+echo "Building application..."
+// For Node.js app or similar, run npm or yarn build (or other build process)
+sh 'npm install'
+sh 'npm run build'
+}
+}
+}
+
+stage('Unit Test') {
+steps {
+script {
+echo "Running unit tests..."
+sh 'npm test'
+}
+}
+post {
+always {
+junit 'reports/unit-tests.xml' // Always archive test results
+}
+failure {
+echo "Unit tests failed. Arborting the pipeline."
+error("Unit test failed")
+}
+}
+}
+
+stage('Code Quality Check') {
+steps {
+script {
+echo "Running code quality checks..."
+// Use tools like ESLint, SonarQube, etc.
+sh 'npm run lint'
+}
+}
+}
+
+stage('Build Docker Image') {
+steps {
+script {
+echo "Building Docker image. Please wait..."
+sh "docker build -t ${DOCKER_IMAGE} ."
+}
+}
+}
+
+stage('Docker to Development') {
+when {
+expression { env.BRANCH_NAME == 'dev' }
+}
+steps {
+script {
+echo "Deploying to Development environment"
+// Deployment logic for development
+deployToEnv(DEV_ENV)
+}
+}
+}
+
+stage('Deploy to Staging') {
+when {
+expression { env.BRANCH_NAME == 'main' }
+}
+steps {
+input message: 'Deploy to Staging?', ok: 'Deploy'
+script {
+echo "Deploying to Staging environment"
+// Deployment logic for staging
+deployToEnv(STAGING_ENV)
+}
+}
+}
+
+stage('Manual Approval for Production') {
+when {
+expression { env.BRANCH_NAME == 'release' }
+}
+steps {
+input message: 'Deploy to Production?', ok: 'Deploy'
+}
+}
+
+stage('Deploy to Production') {
+when {
+expression { env.BRANCH_NAME == 'release' }
+steps {
+script {
+echo "Deploying to Production environment"
+// Deployment logic for staging
+deployToEnv(PROD_ENV)
+}
+}
+}
+}
+
+post {}
+}
+}
