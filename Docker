@@ -1,2 +1,8 @@
 # Node.js base image
 FROM node:16
+
+# Create app directory
+WORKDIR /usr/src/app
+
+# Copy pkg & pkg-lock JSONs
+COPY package*.json
