@@ -1,0 +1,19 @@
+{
+	"name": "myapp",
+	"version": "1.0.0",
+	"description": "My Jenkins intergrated app | CI-CD pipeline dev | KalKey",
+	"main": "index.js",
+	"scripts": {
+		"start": "node server.js",
+		"build": "react-scripts build",
+		"test": "jest",
+		"lint": "eslint ."
+	},
+	"dependencies": {
+		"express": "^4.17.1"
+	},
+	"devDependencies": {
+		"jest": "^27.0.6",
+		"eslint": "^7.32.0"
+	}
+}
