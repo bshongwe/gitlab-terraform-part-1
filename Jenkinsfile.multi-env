@@ -120,6 +120,26 @@ pipeline {
 			}
 		}
 
-		post {}
+		post {
+		success {
+		echo "Deployment successful!"
+		// Notify the team, send notifications, or trigger another pipeline if need
+		}
+		failure {
+		echo "Pipeline failed. Sending alert..."
+		// Error handling (e.g., sending notifications)
+		}
 	}
+}
+
+// Helper function to deploy to deploy to different environments
+def deployToEnv(environment) {
+echo "Deploying to ${enviroment} environment..."
+if (environment == env.PROD_ENV) {
+// For production, ensure you have the necessary check (e.g., backup, scaling)
+sh 'docker-compose up -d --scale app=3' // for scaling 3 replicas for production
+} else {
+sh 'docker-compose up -d'
+}
+echo "${enviroment} deployment complete!"
 }
